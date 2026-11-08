@@ -19,4 +19,24 @@ public class CuentaController {
     public void desactivar(int id) throws SQLException {
         dao.desactivar(id);
     }
+    public void actualizar(int id, String tipo, String estado) throws SQLException {
+        if (id <= 0) {
+            throw new IllegalArgumentException("Cuenta invalida");
+        }
+
+        if (!"Ahorro".equals(tipo) && !"Corriente".equals(tipo)) {
+            throw new IllegalArgumentException("Tipo de cuenta invalido");
+        }
+
+        if (!"Activa".equals(estado) &&
+            !"Inactiva".equals(estado) &&
+            !"Bloqueada".equals(estado)) {
+            throw new IllegalArgumentException("Estado invalido");
+        }
+
+        dao.actualizar(id, tipo, estado);
+    }
+    public String obtenerNombreCliente(int clienteId) throws SQLException {
+        return dao.obtenerNombreCliente(clienteId);
+    }
 }

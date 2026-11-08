@@ -28,4 +28,13 @@ public class ClienteController {
     public void desactivar(int id) throws SQLException {
         dao.desactivar(id);
     }
+    public List<Cliente> buscarActivos(String texto) throws SQLException {
+        if (texto == null || texto.isBlank()) {
+            throw new IllegalArgumentException(
+                "Ingrese un nombre, codigo o DUI"
+            );
+        }
+
+        return dao.buscarActivos(texto);
+    }
 }

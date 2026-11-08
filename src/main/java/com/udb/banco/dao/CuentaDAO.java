@@ -59,4 +59,35 @@ public class CuentaDAO {
             }
         }
     }
+    public void actualizar(int id, String tipo, String estado) throws SQLException {
+        String sql = "UPDATE cuentas_bancarias SET tipo_cuenta=?, estado=? WHERE id=?";
+
+        try (Connection con = ConexionBD.conectar();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, tipo);
+            ps.setString(2, estado);
+            ps.setInt(3, id);
+
+            if (ps.executeUpdate() == 0) {
+                throw new SQLException("Cuenta no encontrada");
+            }
+        }
+    }
+    public String obtenerNombreCliente(int clienteId) throws SQLException {
+        String sql = "SELECT nombre_completo FROM clientes WHERE id = ?";
+
+        try (Connection con = ConexionBD.conectar();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, clienteId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("nombre_completo");
+                }
+            }
+        }
+
+        return "Cliente no encontrado";
+    }
 }

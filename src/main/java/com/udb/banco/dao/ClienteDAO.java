@@ -83,4 +83,47 @@ public class ClienteDAO {
             ps.executeUpdate();
         }
     }
+    public List<Cliente> buscarActivos(String texto) throws SQLException {
+        List<Cliente> resultados = new ArrayList<>();
+
+        String sql = """
+            SELECT *
+            FROM clientes
+            WHERE estado = 'Activo'
+              AND (
+                  nombre_completo LIKE ?
+                  OR codigo_cliente LIKE ?
+                  OR dui LIKE ?
+              )
+            ORDER BY nombre_completo
+            LIMIT 20
+            """;
+
+        try (Connection con = ConexionBD.conectar();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            String filtro = "%" + texto.trim() + "%";
+
+            ps.setString(1, filtro);
+            ps.setString(2, filtro);
+            ps.setString(3, filtro);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    resultados.add(new Cliente(
+                        rs.getInt("id"),
+                        rs.getString("codigo_cliente"),
+                        rs.getString("dui"),
+                        rs.getString("nombre_completo"),
+                        rs.getString("telefono"),
+                        rs.getString("correo"),
+                        rs.getString("direccion"),
+                        rs.getString("estado")
+                    ));
+                }
+            }
+        }
+
+        return resultados;
+    }
 }

@@ -16,13 +16,14 @@ public class PanelCuentas extends JPanel {
     private final ClienteController clienteController = new ClienteController();
 
     private final JTextField numero = new JTextField();
+        private final JTextField buscarCliente = new JTextField();
     private final JComboBox<ClienteItem> cliente = new JComboBox<>();
     private final JComboBox<String> tipo =
         new JComboBox<>(new String[]{"Ahorro", "Corriente"});
     private final JTextField saldo = new JTextField("0.00");
 
     private final DefaultTableModel modelo = new DefaultTableModel(
-        new String[]{"ID", "Numero", "Cliente ID", "Tipo", "Saldo", "Estado"}, 0) {
+        new String[]{"ID", "Numero de cuenta", "Propietario", "Tipo", "Saldo", "Estado"}, 0) {
         @Override
         public boolean isCellEditable(int fila, int columna) {
             return false;
@@ -39,7 +40,11 @@ public class PanelCuentas extends JPanel {
         formulario.add(new JLabel("Numero de cuenta:"));
         formulario.add(numero);
         formulario.add(new JLabel("Cliente:"));
-        formulario.add(cliente);
+                JPanel panelBusqueda = new JPanel(new BorderLayout(5, 0));
+        JButton botonBuscar = new JButton("Buscar");
+        panelBusqueda.add(buscarCliente, BorderLayout.CENTER);
+        panelBusqueda.add(botonBuscar, BorderLayout.EAST);
+        formulario.add(panelBusqueda);
         formulario.add(new JLabel("Tipo de cuenta:"));
         formulario.add(tipo);
         formulario.add(new JLabel("Saldo inicial:"));
@@ -48,20 +53,31 @@ public class PanelCuentas extends JPanel {
         JButton registrar = new JButton("Crear cuenta");
         JButton consultar = new JButton("Consultar cuentas");
         JButton eliminar = new JButton("Eliminar");
+        JButton actualizar = new JButton("Actualizar cuenta");
         JButton actualizarClientes = new JButton("Actualizar clientes");
 
         JPanel botones = new JPanel(new FlowLayout());
         botones.add(registrar);
         botones.add(consultar);
         botones.add(eliminar);
+        botones.add(actualizar);
         botones.add(actualizarClientes);
 
         JPanel superior = new JPanel(new BorderLayout());
-        superior.add(formulario, BorderLayout.CENTER);
+                JPanel campos = new JPanel(new BorderLayout(5, 5));
+        campos.add(formulario, BorderLayout.NORTH);
+
+        JPanel resultados = new JPanel(new BorderLayout(5, 5));
+        resultados.add(new JLabel("Propietario seleccionado:"), BorderLayout.WEST);
+        resultados.add(cliente, BorderLayout.CENTER);
+
+        campos.add(resultados, BorderLayout.SOUTH);
+        superior.add(campos, BorderLayout.CENTER);
         superior.add(botones, BorderLayout.SOUTH);
 
         add(superior, BorderLayout.NORTH);
         JTable tablaCuentas = new JTable(modelo);
+        tablaCuentas.removeColumn(tablaCuentas.getColumnModel().getColumn(0));
         add(new JScrollPane(tablaCuentas), BorderLayout.CENTER);
 
         registrar.addActionListener(e -> ejecutar(() -> {
@@ -98,7 +114,7 @@ public class PanelCuentas extends JPanel {
             }
 
             int id = Integer.parseInt(
-                tablaCuentas.getValueAt(fila, 0).toString()
+                modelo.getValueAt(tablaCuentas.convertRowIndexToModel(fila), 0).toString()
             );
 
             int respuesta = JOptionPane.showConfirmDialog(
@@ -117,6 +133,61 @@ public class PanelCuentas extends JPanel {
             }
         }));
 
+                actualizar.addActionListener(e -> ejecutar(() -> {
+            int fila = tablaCuentas.getSelectedRow();
+
+            if (fila < 0) {
+                throw new IllegalArgumentException(
+                    "Seleccione una cuenta de la tabla"
+                );
+            }
+
+            int filaModelo = tablaCuentas.convertRowIndexToModel(fila);
+            int id = Integer.parseInt(
+                modelo.getValueAt(filaModelo, 0).toString()
+            );
+
+            String tipoActual = modelo.getValueAt(filaModelo, 3).toString();
+            String estadoActual = modelo.getValueAt(filaModelo, 5).toString();
+
+            JComboBox<String> tipos = new JComboBox<>(
+                new String[]{"Ahorro", "Corriente"}
+            );
+            tipos.setSelectedItem(tipoActual);
+
+            JComboBox<String> estados = new JComboBox<>(
+                new String[]{"Activa", "Inactiva", "Bloqueada"}
+            );
+            estados.setSelectedItem(estadoActual);
+
+            JPanel panel = new JPanel(new java.awt.GridLayout(2, 2, 8, 8));
+            panel.add(new JLabel("Tipo:"));
+            panel.add(tipos);
+            panel.add(new JLabel("Estado:"));
+            panel.add(estados);
+
+            int respuesta = JOptionPane.showConfirmDialog(
+                this, panel, "Actualizar cuenta",
+                JOptionPane.OK_CANCEL_OPTION
+            );
+
+            if (respuesta == JOptionPane.OK_OPTION) {
+                controller.actualizar(
+                    id,
+                    tipos.getSelectedItem().toString(),
+                    estados.getSelectedItem().toString()
+                );
+
+                cargarCuentas();
+                JOptionPane.showMessageDialog(
+                    this, "Cuenta actualizada correctamente"
+                );
+            }
+        }));
+
+                botonBuscar.addActionListener(e -> ejecutar(this::cargarClientes));
+        buscarCliente.addActionListener(e -> ejecutar(this::cargarClientes));
+
         consultar.addActionListener(e -> ejecutar(this::cargarCuentas));
         actualizarClientes.addActionListener(e -> ejecutar(this::cargarClientes));
 
@@ -129,13 +200,25 @@ public class PanelCuentas extends JPanel {
     private void cargarClientes() throws Exception {
         cliente.removeAllItems();
 
-        for (Cliente c : clienteController.consultar()) {
-            if ("Activo".equals(c.getEstado())) {
-                cliente.addItem(new ClienteItem(c.getId(), c.getNombreCompleto()));
-            }
+        String texto = buscarCliente.getText().trim();
+
+        if (texto.isEmpty()) {
+            return;
+        }
+
+        for (Cliente c : clienteController.buscarActivos(texto)) {
+            cliente.addItem(new ClienteItem(
+                c.getId(),
+                c.getNombreCompleto() + " (" + c.getCodigoCliente() + ")"
+            ));
+        }
+
+        if (cliente.getItemCount() == 0) {
+            JOptionPane.showMessageDialog(
+                this, "No se encontraron clientes activos"
+            );
         }
     }
-
     private void cargarCuentas() throws Exception {
         modelo.setRowCount(0);
 
@@ -143,7 +226,7 @@ public class PanelCuentas extends JPanel {
             modelo.addRow(new Object[]{
                 c.getId(),
                 c.getNumeroCuenta(),
-                c.getClienteId(),
+                controller.obtenerNombreCliente(c.getClienteId()),
                 c.getTipoCuenta(),
                 c.getSaldo(),
                 c.getEstado()
@@ -177,7 +260,7 @@ public class PanelCuentas extends JPanel {
 
         @Override
         public String toString() {
-            return id + " - " + nombre;
+            return nombre;
         }
     }
 }
