@@ -1,0 +1,23 @@
+﻿erDiagram
+    CLIENTES ||--o{ CUENTAS_BANCARIAS : posee
+
+    CLIENTES {
+        INT id PK
+        VARCHAR codigo_cliente UK
+        VARCHAR dui UK
+        VARCHAR nombre_completo
+        VARCHAR telefono
+        VARCHAR correo
+        VARCHAR direccion
+        ENUM estado
+    }
+
+    CUENTAS_BANCARIAS {
+        INT id PK
+        VARCHAR numero_cuenta UK
+        INT cliente_id FK
+        ENUM tipo_cuenta
+        DECIMAL saldo
+        ENUM estado
+        TIMESTAMP fecha_apertura
+    }

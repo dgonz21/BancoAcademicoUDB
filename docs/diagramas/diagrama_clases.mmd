@@ -1,0 +1,81 @@
+﻿classDiagram
+    direction TB
+
+    class Cliente {
+        -int id
+        -String codigoCliente
+        -String dui
+        -String nombreCompleto
+        -String telefono
+        -String correo
+        -String direccion
+        -String estado
+        +getId() int
+        +getNombreCompleto() String
+        +getEstado() String
+        +setEstado(String) void
+    }
+
+    class CuentaBancaria {
+        -int id
+        -String numeroCuenta
+        -int clienteId
+        -String tipoCuenta
+        -BigDecimal saldo
+        -String estado
+        +getNumeroCuenta() String
+        +getClienteId() int
+        +getSaldo() BigDecimal
+        +getEstado() String
+    }
+
+    class ClienteController {
+        -ClienteDAO dao
+        +registrar(Cliente) void
+        +consultar() List~Cliente~
+        +actualizar(Cliente) void
+        +desactivar(int) void
+        +buscarActivos(String) List~Cliente~
+    }
+
+    class CuentaController {
+        -CuentaDAO dao
+        +registrar(CuentaBancaria) void
+        +consultar() List~CuentaBancaria~
+        +actualizar(int,String,String) void
+        +desactivar(int) void
+    }
+
+    class ClienteDAO {
+        +insertar(Cliente) void
+        +listar() List~Cliente~
+        +actualizar(Cliente) void
+        +desactivar(int) void
+        +buscarActivos(String) List~Cliente~
+    }
+
+    class CuentaDAO {
+        +insertar(CuentaBancaria) void
+        +listar() List~CuentaBancaria~
+        +actualizar(int,String,String) void
+        +desactivar(int) void
+    }
+
+    class ConexionBD {
+        +conectar() Connection
+    }
+
+    class VentanaPrincipal
+    class PanelCuentas
+
+    Cliente "1" --> "0..*" CuentaBancaria : posee
+    VentanaPrincipal --> ClienteController
+    VentanaPrincipal --> PanelCuentas
+    PanelCuentas --> CuentaController
+    PanelCuentas --> ClienteController
+    ClienteController --> ClienteDAO
+    CuentaController --> CuentaDAO
+    ClienteDAO ..> ConexionBD
+    CuentaDAO ..> ConexionBD
+    ClienteDAO ..> Cliente
+    CuentaDAO ..> CuentaBancaria
