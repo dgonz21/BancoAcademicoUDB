@@ -1,5 +1,10 @@
 C:\Users\alexs\BancoAcademicoUDB\src\main\java\com\udb\banco\conexion\ConexionBD.java
+C:\Users\alexs\BancoAcademicoUDB\src\main\java\com\udb\banco\controlador\ClienteController.java
+C:\Users\alexs\BancoAcademicoUDB\src\main\java\com\udb\banco\controlador\CuentaController.java
 C:\Users\alexs\BancoAcademicoUDB\src\main\java\com\udb\banco\dao\ClienteDAO.java
+C:\Users\alexs\BancoAcademicoUDB\src\main\java\com\udb\banco\dao\CuentaDAO.java
 C:\Users\alexs\BancoAcademicoUDB\src\main\java\com\udb\banco\Main.java
 C:\Users\alexs\BancoAcademicoUDB\src\main\java\com\udb\banco\modelo\Cliente.java
+C:\Users\alexs\BancoAcademicoUDB\src\main\java\com\udb\banco\modelo\CuentaBancaria.java
+C:\Users\alexs\BancoAcademicoUDB\src\main\java\com\udb\banco\vista\PanelCuentas.java
 C:\Users\alexs\BancoAcademicoUDB\src\main\java\com\udb\banco\vista\VentanaPrincipal.java

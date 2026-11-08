@@ -1,6 +1,6 @@
 package com.udb.banco.vista;
 
-import com.udb.banco.dao.ClienteDAO;
+import com.udb.banco.controlador.ClienteController;
 import com.udb.banco.modelo.Cliente;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -8,7 +8,7 @@ import java.awt.*;
 
 public class VentanaPrincipal extends JFrame {
 
-    private final ClienteDAO dao = new ClienteDAO();
+    private final ClienteController controller = new ClienteController();
 
     private final JTextField codigo = new JTextField();
     private final JTextField dui = new JTextField();
@@ -55,12 +55,14 @@ public class VentanaPrincipal extends JFrame {
         JButton guardar = new JButton("Registrar");
         JButton actualizar = new JButton("Actualizar");
         JButton desactivar = new JButton("Desactivar");
+        JButton eliminar = new JButton("Eliminar");
         JButton limpiar = new JButton("Limpiar");
         JButton refrescar = new JButton("Consultar");
 
         botones.add(guardar);
         botones.add(actualizar);
         botones.add(desactivar);
+        botones.add(eliminar);
         botones.add(limpiar);
         botones.add(refrescar);
 
@@ -68,11 +70,16 @@ public class VentanaPrincipal extends JFrame {
         superior.add(formulario, BorderLayout.CENTER);
         superior.add(botones, BorderLayout.SOUTH);
 
-        add(superior, BorderLayout.NORTH);
-        add(new JScrollPane(tabla), BorderLayout.CENTER);
+        JPanel panelClientes = new JPanel(new BorderLayout());
+panelClientes.add(superior, BorderLayout.NORTH);
+        panelClientes.add(new JScrollPane(tabla), BorderLayout.CENTER);
+JTabbedPane pestanas = new JTabbedPane();
+pestanas.addTab("Clientes", panelClientes);
+pestanas.addTab("Cuentas bancarias", new PanelCuentas());
+add(pestanas, BorderLayout.CENTER);
 
         guardar.addActionListener(e -> ejecutar(() -> {
-            dao.insertar(obtenerCliente(0));
+            controller.registrar(obtenerCliente(0));
             cargarClientes();
             limpiarFormulario();
             mensaje("Cliente registrado correctamente");
@@ -80,7 +87,7 @@ public class VentanaPrincipal extends JFrame {
 
         actualizar.addActionListener(e -> ejecutar(() -> {
             int id = obtenerIdSeleccionado();
-            dao.actualizar(obtenerCliente(id));
+            controller.actualizar(obtenerCliente(id));
             cargarClientes();
             limpiarFormulario();
             mensaje("Cliente actualizado");
@@ -88,11 +95,36 @@ public class VentanaPrincipal extends JFrame {
 
         desactivar.addActionListener(e -> ejecutar(() -> {
             int id = obtenerIdSeleccionado();
-            dao.desactivar(id);
+            controller.desactivar(id);
             cargarClientes();
             limpiarFormulario();
             mensaje("Cliente desactivado");
         }));
+
+                eliminar.addActionListener(e -> {
+            try {
+                int id = obtenerIdSeleccionado();
+
+                int respuesta = JOptionPane.showConfirmDialog(
+                    this,
+                    "¿Desea eliminar este cliente? Se marcara como Inactivo.",
+                    "Confirmar eliminacion",
+                    JOptionPane.YES_NO_OPTION
+                );
+
+                if (respuesta == JOptionPane.YES_OPTION) {
+                    controller.desactivar(id);
+                    cargarClientes();
+                    limpiarFormulario();
+                    mensaje("Cliente desactivado correctamente");
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                    this, ex.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
+        });
 
         limpiar.addActionListener(e -> limpiarFormulario());
 
@@ -141,7 +173,7 @@ public class VentanaPrincipal extends JFrame {
 
     private void cargarClientes() throws Exception {
         modelo.setRowCount(0);
-        for (Cliente c : dao.listar()) {
+        for (Cliente c : controller.consultar()) {
             modelo.addRow(new Object[]{
                 c.getId(), c.getCodigoCliente(), c.getDui(),
                 c.getNombreCompleto(), c.getTelefono(), c.getCorreo(),
